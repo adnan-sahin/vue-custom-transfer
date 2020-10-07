@@ -1,26 +1,22 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <VueCustomTransfer />
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import VueCustomTransfer from './components/VueCustomTransfer';
 export default {
   name: 'App',
   components: {
-    HelloWorld
-  }
-}
+    VueCustomTransfer,
+  },
+};
 </script>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Roboto', sans-serif;
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
