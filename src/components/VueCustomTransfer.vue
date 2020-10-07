@@ -79,6 +79,44 @@
           </div>
         </div>
       </div>
+
+      <div class="custom-transfer__buttons">
+        <div
+          class="custom-transfer__button"
+          @click.prevent="handleFromSourceToTarget"
+        >
+          <img
+            :src="getImage('arrow-right.svg')"
+            alt=""
+            width="12px"
+            height="12px"
+          />
+        </div>
+        <div class="custom-transfer__button">
+          <img
+            :src="getImage('arrow-left.svg')"
+            alt=""
+            width="12px"
+            height="12px"
+          />
+        </div>
+        <div class="custom-transfer__button">
+          <img
+            :src="getImage('arrow_double-right.svg')"
+            alt=""
+            width="12px"
+            height="12px"
+          />
+        </div>
+        <div class="custom-transfer__button">
+          <img
+            :src="getImage('arrow_double-left.svg')"
+            alt=""
+            width="12px"
+            height="12px"
+          />
+        </div>
+      </div>
       <div class="transfer-panel custom-transfer__target">
         <div class="transfer-panel__header">
           {{ config.targetPanelName }}
@@ -109,10 +147,10 @@ export default {
               checked: false,
               collapsed: false,
               children: [
-                { id: 1, name: 'Sub Menu', checked: false },
-                { id: 2, name: 'Sub Menu', checked: false },
-                { id: 3, name: 'Sub Menu', checked: false },
-                { id: 4, name: 'Sub Menu', checked: false },
+                { id: 1, name: 'Child Menu', checked: false },
+                { id: 2, name: 'Child Menu', checked: false },
+                { id: 3, name: 'Child Menu', checked: false },
+                { id: 4, name: 'Child Menu', checked: false },
               ],
             },
             {
@@ -120,10 +158,10 @@ export default {
               checked: false,
               collapsed: false,
               children: [
-                { id: 5, name: 'Sub Menu', checked: false },
-                { id: 6, name: 'Sub Menu', checked: false },
-                { id: 7, name: 'Sub Menu', checked: false },
-                { id: 8, name: 'Sub Menu', checked: false },
+                { id: 5, name: 'Child Menu', checked: false },
+                { id: 6, name: 'Child Menu', checked: false },
+                { id: 7, name: 'Child Menu', checked: false },
+                { id: 8, name: 'Child Menu', checked: false },
               ],
             },
           ],
@@ -138,11 +176,11 @@ export default {
               checked: false,
               collapsed: false,
               children: [
-                { id: 9, name: 'Sub Menu', checked: false },
-                { id: 10, name: 'Sub Menu', checked: false },
-                { id: 11, name: 'Sub Menu', checked: false },
-                { id: 12, name: 'Sub Menu', checked: false },
-                { id: 13, name: 'Sub Menu', checked: false },
+                { id: 9, name: 'Child Menu', checked: false },
+                { id: 10, name: 'Child Menu', checked: false },
+                { id: 11, name: 'Child Menu', checked: false },
+                { id: 12, name: 'Child Menu', checked: false },
+                { id: 13, name: 'Child Menu', checked: false },
               ],
             },
             {
@@ -150,13 +188,13 @@ export default {
               checked: false,
               collapsed: false,
               children: [
-                { id: 14, name: 'Sub Menu', checked: false },
-                { id: 15, name: 'Sub Menu', checked: false },
-                { id: 16, name: 'Sub Menu', checked: false },
-                { id: 17, name: 'Sub Menu', checked: false },
-                { id: 18, name: 'Sub Menu', checked: false },
-                { id: 19, name: 'Sub Menu', checked: false },
-                { id: 20, name: 'Sub Menu', checked: false },
+                { id: 14, name: 'Child Menu', checked: false },
+                { id: 15, name: 'Child Menu', checked: false },
+                { id: 16, name: 'Child Menu', checked: false },
+                { id: 17, name: 'Child Menu', checked: false },
+                { id: 18, name: 'Child Menu', checked: false },
+                { id: 19, name: 'Child Menu', checked: false },
+                { id: 20, name: 'Child Menu', checked: false },
               ],
             },
           ],
@@ -166,13 +204,14 @@ export default {
           checked: false,
           collapsed: false,
           children: [
-            { id: 21, name: 'Sub Menu', checked: false },
-            { id: 22, name: 'Sub Menu', checked: false },
-            { id: 23, name: 'Sub Menu', checked: false },
-            { id: 24, name: 'Sub Menu', checked: false },
+            { id: 21, name: 'Child Menu', checked: false },
+            { id: 22, name: 'Child Menu', checked: false },
+            { id: 23, name: 'Child Menu', checked: false },
+            { id: 24, name: 'Child Menu', checked: false },
           ],
         },
       ],
+      targetMenu: [],
     };
   },
   methods: {
@@ -181,11 +220,13 @@ export default {
       menu.collapsed = !menu.collapsed;
     },
     toggleSubParentMenu(parentIndex, subParentIndex) {
-      debugger;
       let menu = this.sourceMenu[parentIndex].children[subParentIndex];
       menu.collapsed = !menu.collapsed;
-      debugger;
     },
+    getImage(name) {
+      return require('@/assets/' + name);
+    },
+    handleFromSourceToTarget() {},
   },
 };
 </script>
@@ -194,6 +235,23 @@ export default {
 .custom-transfer {
   font-family: 'Roboto', sans-serif;
   display: flex;
+  &__buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 5px 10px;
+  }
+  &__button {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #003a70;
+    border-radius: 6px;
+    margin: 5px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   .transfer-panel {
     width: 210px;
     border: 1px solid #b3c4d4;
@@ -253,11 +311,21 @@ export default {
             font-weight: 700;
           }
         }
+        .child-menu {
+          box-sizing: border-box;
+          border-bottom: 1px solid #e0e7ee;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          label {
+            display: flex;
+            align-items: center;
+          }
+        }
       }
     }
   }
   &__source {
-    margin-right: 10px;
   }
 }
 </style>
