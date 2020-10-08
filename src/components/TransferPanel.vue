@@ -17,6 +17,7 @@
               <div v-show="showGrandParent(item)" class="parent-items">
                 <input
                   type="checkbox"
+                  v-indeterminate="checkIndeterminate(item)"
                   v-model="item.checked"
                   @click="
                     handleChangeItem({
@@ -25,9 +26,7 @@
                   "
                 />
                 <label @click.prevent="toggleParentItem(index)">
-                  <span>
-                    {{ item.name }}
-                  </span>
+                  <span> {{ item.name }} </span>
                   <img
                     :src="
                       item.collapsed
@@ -62,6 +61,7 @@
                   >
                     <input
                       type="checkbox"
+                      v-indeterminate="checkIndeterminate(subItem)"
                       v-model="subItem.checked"
                       @click="
                         handleChangeItem({
@@ -156,9 +156,28 @@ export default {
       };
     },
   },
+  directives: {
+    indeterminate: function(el, binding) {
+      el.indeterminate = Boolean(binding.value);
+    },
+  },
   methods: {
     onMoveCallback(event, originalEvent) {
       return event.relatedContext.list.includes(event.draggedContext.element);
+    },
+    checkIndeterminate(item) {
+      return (
+        (item.children &&
+          item.children.some((p) => p.checked) &&
+          !item.children.every((p) => p.checked)) ||
+        (item.children &&
+          item.children.some(
+            (p) => p.children && p.children.some((p) => p.checked)
+          ) &&
+          !item.children.every(
+            (p) => p.children && p.children.every((p) => p.checked)
+          ))
+      );
     },
     showGrandParent(item) {
       return (
