@@ -7,17 +7,17 @@
     <div class="custom-transfer">
       <div class="custom-transfer__source">
         <TransferPanel
-          panelType="source"
+          ref="sourcePanel"
           panelName="SOURCE PANEL"
           :panelItems="sourceItems"
-          @changeSelectedItems="handleChangeSelectedSourceItems"
+          @hasAnySelectedItem="(val) => (hasAnySelectedSourceItem = val)"
           @toggleParentItem="handleSourceToggleParentItem"
           @toggleSubParentItem="handleSourceToggleSubParentItem"
         />
       </div>
       <div class="custom-transfer__buttons">
         <button
-          :disabled="selectedSourceItems.length == 0"
+          :disabled="!hasAnySelectedSourceItem"
           class="custom-transfer__button"
           @click.prevent="handleFromSourceToTarget"
         >
@@ -29,7 +29,7 @@
           />
         </button>
         <button
-          :disabled="selectedTargetItems.length == 0"
+          :disabled="!hasAnySelectedTargetItem"
           @click.prevent="handleFromTargetToSource"
           class="custom-transfer__button"
         >
@@ -65,10 +65,10 @@
       </div>
       <div class="custom-transfer__target">
         <TransferPanel
-          panelType="target"
+          ref="targetPanel"
           panelName="TARGET PANEL"
           :panelItems="targetItems"
-          @changeSelectedItems="handleChangeSelectedTargetItems"
+          @hasAnySelectedItem="(val) => (hasAnySelectedTargetItem = val)"
           @toggleParentItem="handleTargetToggleParentItem"
           @toggleSubParentItem="handleTargetToggleSubParentItem"
         />
@@ -90,6 +90,8 @@ export default {
       },
       selectedSourceItems: [],
       selectedTargetItems: [],
+      hasAnySelectedSourceItem: false,
+      hasAnySelectedTargetItem: false,
       initialItems: [],
       sourceItems: [
         {
@@ -248,66 +250,16 @@ export default {
     getImage(name) {
       return require('@/assets/' + name);
     },
-    handleChangeSelectedSourceItems(items) {
-      this.selectedSourceItems = items;
-    },
-    handleChangeSelectedTargetItems(items) {
-      this.selectedTargetItems = items;
-    },
-    handleFromSourceToTarget() {
-      this.selectedSourceItems.forEach(
-        ({ grandParentItem, parentItem, childItem }) => {
-          if (grandParentItem && parentItem && childItem) {
-            let grandParentTarget = this.targetItems.find(
-              (item) => item.id == grandParentItem.id
-            );
-            let parentTarget = grandParentTarget.children.find(
-              (p) => p.id == parentItem.id
-            );
-            if (!parentTarget.children.find((p) => p.id == childItem.id)) {
-              parentTarget.children.push(
-                Object.assign({}, { ...childItem, checked: false })
-              );
-            }
-            let grandParentSource = this.sourceItems.find(
-              (item) => item.id == grandParentItem.id
-            );
-            let parentSource = grandParentSource.children.find(
-              (p) => p.id == parentItem.id
-            );
-            let sourceIndex = parentSource.children.findIndex(
-              (p) => p.id == childItem.id
-            );
-            if (sourceIndex > -1) {
-              parentSource.children.splice(sourceIndex, 1);
-            }
-          } else if (grandParentItem && parentItem) {
-            let grandParentTarget = this.targetItems.find(
-              (p) => p.id == grandParentItem.id
-            );
 
-            if (
-              !grandParentTarget.children.find((p) => p.id == parentItem.id)
-            ) {
-              grandParentTarget.children.push(
-                Object.assign({}, { ...parentItem, checked: false })
-              );
-            }
-            let grandParentSource = this.sourceItems.find(
-              (p) => p.id == grandParentItem.id
-            );
-            let sourceIndex = grandParentSource.children.findIndex(
-              (p) => p.id == parentItem.id
-            );
-            if (sourceIndex > -1) {
-              grandParentSource.children.splice(sourceIndex, 1);
-            }
-          }
-        }
-      );
-      this.selectedSourceItems = [];
+    handleFromSourceToTarget() {
+      this.selectedSourceItems = this.$refs.sourcePanel.getSelectedItems();
+      this.transferFromSourceToTarget();
     },
     handleFromTargetToSource() {
+      this.selectedTargetItems = this.$refs.targetPanel.getSelectedItems();
+      this.transferFromTargetToSource();
+    },
+    transferFromTargetToSource() {
       this.selectedTargetItems.forEach(
         ({ grandParentItem, parentItem, childItem }) => {
           if (grandParentItem && parentItem && childItem) {
@@ -359,14 +311,69 @@ export default {
         }
       );
       this.selectedTargetItems = [];
+      this.hasAnySelectedTargetItem = false;
+    },
+    transferFromSourceToTarget() {
+      this.selectedSourceItems.forEach(
+        ({ grandParentItem, parentItem, childItem }) => {
+          if (grandParentItem && parentItem && childItem) {
+            let grandParentTarget = this.targetItems.find(
+              (item) => item.id == grandParentItem.id
+            );
+            let parentTarget = grandParentTarget.children.find(
+              (p) => p.id == parentItem.id
+            );
+            if (!parentTarget.children.find((p) => p.id == childItem.id)) {
+              parentTarget.children.push(
+                Object.assign({}, { ...childItem, checked: false })
+              );
+            }
+            let grandParentSource = this.sourceItems.find(
+              (item) => item.id == grandParentItem.id
+            );
+            let parentSource = grandParentSource.children.find(
+              (p) => p.id == parentItem.id
+            );
+            let sourceIndex = parentSource.children.findIndex(
+              (p) => p.id == childItem.id
+            );
+            if (sourceIndex > -1) {
+              parentSource.children.splice(sourceIndex, 1);
+            }
+          } else if (grandParentItem && parentItem) {
+            let grandParentTarget = this.targetItems.find(
+              (p) => p.id == grandParentItem.id
+            );
+
+            if (
+              !grandParentTarget.children.find((p) => p.id == parentItem.id)
+            ) {
+              grandParentTarget.children.push(
+                Object.assign({}, { ...parentItem, checked: false })
+              );
+            }
+            let grandParentSource = this.sourceItems.find(
+              (p) => p.id == grandParentItem.id
+            );
+            let sourceIndex = grandParentSource.children.findIndex(
+              (p) => p.id == parentItem.id
+            );
+            if (sourceIndex > -1) {
+              grandParentSource.children.splice(sourceIndex, 1);
+            }
+          }
+        }
+      );
+      this.selectedSourceItems = [];
+      this.hasAnySelectedSourceItem = false;
     },
     handleFromAllSourceToTarget() {
       this.selectedSourceItems = this.transferAllItems(this.sourceItems);
-      this.handleFromSourceToTarget();
+      this.transferFromSourceToTarget();
     },
     handleFromAllTargetToSource() {
       this.selectedTargetItems = this.transferAllItems(this.targetItems);
-      this.handleFromTargetToSource();
+      this.transferFromTargetToSource();
     },
     transferAllItems(items) {
       let selectedItems = [];
