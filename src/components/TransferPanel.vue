@@ -6,66 +6,31 @@
       </div>
       <div class="transfer-panel__body">
         <div class="items">
-          <div v-for="(item, index) in panelItems" :key="index">
-            <div v-show="showGrandParent(item)" class="parent-items">
-              <input
-                type="checkbox"
-                v-model="item.checked"
-                @click="
-                  handleChangeItem({
-                    grandParentItem: item,
-                  })
-                "
-              />
-              <label @click.prevent="toggleParentItem(index)">
-                <span>
-                  {{ item.name }}
-                </span>
-                <img
-                  :src="
-                    item.collapsed
-                      ? require('@/assets/down-arrow.svg')
-                      : require('@/assets/up-arrow.svg')
-                  "
-                  alt=""
-                  width="12px"
-                  height="12px"
-                />
-              </label>
-            </div>
-            <div
-              v-show="!item.collapsed"
-              v-for="(subItem, subItemIndex) in item.children"
-              :key="subItemIndex"
-            >
-              <div
-                v-show="
-                  !subItem.children ||
-                    (subItem.children && subItem.children.length > 0)
-                "
-                class="parent-items"
-                :style="{ paddingLeft: 15 + 'px' }"
-              >
+          <draggable
+            v-bind="dragOptions"
+            @start="drag = true"
+            @end="drag = false"
+            :move="onMoveCallback"
+            :list="panelItems"
+          >
+            <div v-for="(item, index) in panelItems" :key="index">
+              <div v-show="showGrandParent(item)" class="parent-items">
                 <input
                   type="checkbox"
-                  v-model="subItem.checked"
+                  v-model="item.checked"
                   @click="
                     handleChangeItem({
                       grandParentItem: item,
-                      parentItem: subItem,
                     })
                   "
                 />
-                <label
-                  @click.prevent="toggleSubParentItem(index, subItemIndex)"
-                >
+                <label @click.prevent="toggleParentItem(index)">
                   <span>
-                    {{ subItem.name }}
+                    {{ item.name }}
                   </span>
                   <img
-                    v-if="subItem.children"
                     :src="
-                      subItem.collapsed
+                      item.collapsed
                         ? require('@/assets/down-arrow.svg')
                         : require('@/assets/up-arrow.svg')
                     "
@@ -75,33 +40,101 @@
                   />
                 </label>
               </div>
-
-              <template v-if="subItem.children">
-                <div
-                  :style="{ paddingLeft: 30 + 'px' }"
-                  v-show="!subItem.collapsed"
-                  class="child-items"
-                  v-for="(childItem, childItemIndex) in subItem.children"
-                  :key="childItemIndex"
-                >
-                  <label>
-                    <input
-                      type="checkbox"
-                      v-model="childItem.checked"
-                      @click="
-                        handleChangeItem({
-                          grandParentItem: item,
-                          parentItem: subItem,
-                          childItem,
-                        })
+              <draggable
+                v-bind="dragOptions"
+                @start="drag = true"
+                @end="drag = false"
+                :move="onMoveCallback"
+                v-model="item.children"
+              >
+                <transition-group type="transition">
+                  <div
+                    v-show="!item.collapsed"
+                    v-for="(subItem, subItemIndex) in item.children"
+                    :key="subItemIndex"
+                  >
+                    <div
+                      v-show="
+                        !subItem.children ||
+                          (subItem.children && subItem.children.length > 0)
                       "
-                    />
-                    <span> {{ childItem.name }} {{ childItem.id }} </span>
-                  </label>
-                </div>
-              </template>
+                      class="parent-items"
+                      :style="{ paddingLeft: 15 + 'px' }"
+                    >
+                      <input
+                        type="checkbox"
+                        v-model="subItem.checked"
+                        @click="
+                          handleChangeItem({
+                            grandParentItem: item,
+                            parentItem: subItem,
+                          })
+                        "
+                      />
+                      <label
+                        @click.prevent="
+                          toggleSubParentItem(index, subItemIndex)
+                        "
+                      >
+                        <span>
+                          {{ subItem.name }}
+                        </span>
+                        <img
+                          v-if="subItem.children"
+                          :src="
+                            subItem.collapsed
+                              ? require('@/assets/down-arrow.svg')
+                              : require('@/assets/up-arrow.svg')
+                          "
+                          alt=""
+                          width="12px"
+                          height="12px"
+                        />
+                      </label>
+                    </div>
+
+                    <template v-if="subItem.children">
+                      <draggable
+                        v-bind="dragOptions"
+                        v-model="subItem.children"
+                        :move="onMoveCallback"
+                        @start="drag = true"
+                        @end="drag = false"
+                      >
+                        <transition-group type="transition">
+                          <div
+                            :style="{ paddingLeft: 30 + 'px' }"
+                            v-show="!subItem.collapsed"
+                            class="child-items"
+                            v-for="(childItem,
+                            childItemIndex) in subItem.children"
+                            :key="childItemIndex"
+                          >
+                            <label>
+                              <input
+                                type="checkbox"
+                                v-model="childItem.checked"
+                                @click="
+                                  handleChangeItem({
+                                    grandParentItem: item,
+                                    parentItem: subItem,
+                                    childItem,
+                                  })
+                                "
+                              />
+                              <span>
+                                {{ childItem.name }} {{ childItem.id }}
+                              </span>
+                            </label>
+                          </div>
+                        </transition-group>
+                      </draggable>
+                    </template>
+                  </div>
+                </transition-group>
+              </draggable>
             </div>
-          </div>
+          </draggable>
         </div>
       </div>
     </div>
@@ -109,13 +142,33 @@
 </template>
 
 <script>
+import draggable from 'vuedraggable';
 export default {
   name: 'TransferPanel',
+  components: { draggable },
   props: {
     panelName: { type: String },
     panelItems: { type: Array },
   },
+  data() {
+    return {
+      drag: false,
+    };
+  },
+  computed: {
+    dragOptions() {
+      return {
+        animation: 200,
+        group: 'description',
+        disabled: false,
+        ghostClass: 'ghost',
+      };
+    },
+  },
   methods: {
+    onMoveCallback(event, originalEvent) {
+      return event.relatedContext.list.includes(event.draggedContext.element);
+    },
     showGrandParent(item) {
       return (
         item.children &&
@@ -313,6 +366,11 @@ export default {
         }
       }
     }
+  }
+
+  .ghost {
+    opacity: 0.5;
+    background: #e0e7ee;
   }
 }
 </style>
