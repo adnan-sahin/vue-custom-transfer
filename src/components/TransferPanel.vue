@@ -185,6 +185,7 @@ export default {
       this.$emit('toggleSubParentItem', index, subItemIndex);
     },
     handleChangeItem({ grandParentItem, parentItem, childItem }) {
+      let hasAnySelectedItem = false;
       if (grandParentItem && parentItem && childItem) {
         let grandParent = this.panelItems.find(
           (p) => p.id == grandParentItem.id
@@ -195,6 +196,8 @@ export default {
         grandParentItem.checked = grandParentItem.children.every(
           (p) => p.checked
         );
+        hasAnySelectedItem =
+          childItem.checked || parentItem.checked || grandParentItem.checked;
       } else if (grandParentItem && parentItem && !childItem) {
         let grandParent = this.panelItems.find(
           (p) => p.id == grandParentItem.id
@@ -207,6 +210,7 @@ export default {
             child.checked = parent.checked;
           });
         }
+        hasAnySelectedItem = parent.checked || grandParent.checked;
       } else if (grandParentItem && !parentItem && !childItem) {
         let grandParent = this.panelItems.find(
           (p) => p.id == grandParentItem.id
@@ -220,10 +224,11 @@ export default {
             });
           }
         });
+        hasAnySelectedItem = grandParent.checked;
       }
-      this.setSelectedItems();
+      this.$emit('hasAnySelectedItem', hasAnySelectedItem);
     },
-    setSelectedItems() {
+    getSelectedItems() {
       let selectedItems = [];
       this.panelItems.forEach((grandParent) => {
         if (grandParent.checked) {
@@ -282,7 +287,7 @@ export default {
           });
         }
       });
-      this.$emit('changeSelectedItems', selectedItems);
+      return selectedItems;
     },
   },
   watch: {
