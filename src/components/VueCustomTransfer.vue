@@ -1,9 +1,5 @@
 <template>
   <div>
-    <label>
-      <input type="checkbox" v-model="isGroup" />
-      Group
-    </label>
     <div class="custom-transfer">
       <div class="custom-transfer__source">
         <TransferPanel
