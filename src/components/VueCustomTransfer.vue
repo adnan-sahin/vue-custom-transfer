@@ -5,83 +5,19 @@
       Group
     </label>
     <div class="custom-transfer">
-      <div class="transfer-panel custom-transfer__source">
-        <div class="transfer-panel__header">
-          {{ config.sourcePanelName }}
-        </div>
-        <div class="transfer-panel__body">
-          <div class="menu">
-            <div v-for="(menu, index) in sourceMenu" :key="index">
-              <div class="parent-menu">
-                <input type="checkbox" v-model="menu.checked" />
-                <label @click.prevent="toggleParentMenu(index)">
-                  <span>
-                    {{ menu.name }}
-                  </span>
-                  <img
-                    :src="
-                      menu.collapsed
-                        ? require('@/assets/down-arrow.svg')
-                        : require('@/assets/up-arrow.svg')
-                    "
-                    alt=""
-                    width="12px"
-                    height="12px"
-                  />
-                </label>
-              </div>
-              <div
-                v-show="!menu.collapsed"
-                v-for="(submenu, subMenuIndex) in menu.children"
-                :key="subMenuIndex"
-              >
-                <div class="parent-menu" :style="{ paddingLeft: 15 + 'px' }">
-                  <input type="checkbox" v-model="submenu.checked" />
-                  <label
-                    @click.prevent="toggleSubParentMenu(index, subMenuIndex)"
-                  >
-                    <span>
-                      {{ submenu.name }}
-                    </span>
-                    <img
-                      v-if="submenu.children"
-                      :src="
-                        submenu.collapsed
-                          ? require('@/assets/down-arrow.svg')
-                          : require('@/assets/up-arrow.svg')
-                      "
-                      alt=""
-                      width="12px"
-                      height="12px"
-                    />
-                  </label>
-                </div>
-
-                <template v-if="submenu.children">
-                  <div
-                    :style="{ paddingLeft: 30 + 'px' }"
-                    v-show="!submenu.collapsed"
-                    class="child-menu"
-                    v-for="(childSubMenu,
-                    childSubMenuIndex) in submenu.children"
-                    :key="childSubMenuIndex"
-                  >
-                    <label>
-                      <input type="checkbox" v-model="childSubMenu.checked" />
-                      <span>
-                        {{ childSubMenu.name }}
-                      </span>
-                    </label>
-                  </div>
-                </template>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="custom-transfer__source">
+        <TransferPanel
+          panelType="source"
+          panelName="SOURCE PANEL"
+          :panelItems="sourceItems"
+          @changeSelectedItems="handleChangeSelectedSourceItems"
+          @toggleParentItem="handleSourceToggleParentItem"
+          @toggleSubParentItem="handleSourceToggleSubParentItem"
+        />
       </div>
-
       <div class="custom-transfer__buttons">
-        <div
+        <button
+          :disabled="selectedSourceItems.length == 0"
           class="custom-transfer__button"
           @click.prevent="handleFromSourceToTarget"
         >
@@ -91,44 +27,60 @@
             width="12px"
             height="12px"
           />
-        </div>
-        <div class="custom-transfer__button">
+        </button>
+        <button
+          :disabled="selectedTargetItems.length == 0"
+          @click.prevent="handleFromTargetToSource"
+          class="custom-transfer__button"
+        >
           <img
             :src="getImage('arrow-left.svg')"
             alt=""
             width="12px"
             height="12px"
           />
-        </div>
-        <div class="custom-transfer__button">
+        </button>
+        <button
+          class="custom-transfer__button"
+          @click.prevent="handleFromAllSourceToTarget"
+        >
           <img
             :src="getImage('arrow_double-right.svg')"
             alt=""
             width="12px"
             height="12px"
           />
-        </div>
-        <div class="custom-transfer__button">
+        </button>
+        <button
+          class="custom-transfer__button"
+          @click.prevent="handleFromAllTargetToSource"
+        >
           <img
             :src="getImage('arrow_double-left.svg')"
             alt=""
             width="12px"
             height="12px"
           />
-        </div>
+        </button>
       </div>
-      <div class="transfer-panel custom-transfer__target">
-        <div class="transfer-panel__header">
-          {{ config.targetPanelName }}
-        </div>
-        <div class="transfer-panel__body"></div>
+      <div class="custom-transfer__target">
+        <TransferPanel
+          panelType="target"
+          panelName="TARGET PANEL"
+          :panelItems="targetItems"
+          @changeSelectedItems="handleChangeSelectedTargetItems"
+          @toggleParentItem="handleTargetToggleParentItem"
+          @toggleSubParentItem="handleTargetToggleSubParentItem"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import TransferPanel from './TransferPanel';
 export default {
+  components: { TransferPanel },
   data() {
     return {
       isGroup: false,
@@ -136,13 +88,18 @@ export default {
         sourcePanelName: 'SOURCE PANEL',
         targetPanelName: 'TARGET PANEL',
       },
-      sourceMenu: [
+      selectedSourceItems: [],
+      selectedTargetItems: [],
+      initialItems: [],
+      sourceItems: [
         {
+          id: 1,
           name: 'Grand Parent Menu 1',
           checked: false,
           collapsed: false,
           children: [
             {
+              id: 1,
               name: 'Parent Menu 1',
               checked: false,
               collapsed: false,
@@ -154,6 +111,7 @@ export default {
               ],
             },
             {
+              id: 2,
               name: 'Parent Menu 2',
               checked: false,
               collapsed: false,
@@ -167,11 +125,13 @@ export default {
           ],
         },
         {
+          id: 2,
           name: 'Grand Parent Menu 2',
           checked: false,
           collapsed: false,
           children: [
             {
+              id: 1,
               name: 'Parent Menu 3',
               checked: false,
               collapsed: false,
@@ -184,6 +144,7 @@ export default {
               ],
             },
             {
+              id: 2,
               name: 'Parent Menu 4',
               checked: false,
               collapsed: false,
@@ -200,6 +161,7 @@ export default {
           ],
         },
         {
+          id: 4,
           name: 'Parent Menu 5',
           checked: false,
           collapsed: false,
@@ -211,27 +173,228 @@ export default {
           ],
         },
       ],
-      targetMenu: [],
+      targetItems: [
+        {
+          id: 1,
+          name: 'Grand Parent Menu 1',
+          checked: false,
+          collapsed: false,
+          children: [
+            {
+              id: 1,
+              name: 'Parent Menu 1',
+              checked: false,
+              collapsed: false,
+              children: [],
+            },
+            {
+              id: 2,
+              name: 'Parent Menu 2',
+              checked: false,
+              collapsed: false,
+              children: [],
+            },
+          ],
+        },
+        {
+          id: 2,
+          name: 'Grand Parent Menu 2',
+          checked: false,
+          collapsed: false,
+          children: [
+            {
+              id: 1,
+              name: 'Parent Menu 3',
+              checked: false,
+              collapsed: false,
+              children: [],
+            },
+            {
+              id: 2,
+              name: 'Parent Menu 4',
+              checked: false,
+              collapsed: false,
+              children: [],
+            },
+          ],
+        },
+        {
+          id: 4,
+          name: 'Parent Menu 5',
+          checked: false,
+          collapsed: false,
+          children: [],
+        },
+      ],
     };
   },
   methods: {
-    toggleParentMenu(index) {
-      let menu = this.sourceMenu[index];
-      menu.collapsed = !menu.collapsed;
+    handleSourceToggleParentItem(index) {
+      let item = this.sourceItems[index];
+      item.collapsed = !item.collapsed;
     },
-    toggleSubParentMenu(parentIndex, subParentIndex) {
-      let menu = this.sourceMenu[parentIndex].children[subParentIndex];
-      menu.collapsed = !menu.collapsed;
+    handleSourceToggleSubParentItem(parentIndex, subParentIndex) {
+      let item = this.sourceItems[parentIndex].children[subParentIndex];
+      item.collapsed = !item.collapsed;
+    },
+    handleTargetToggleParentItem(index) {
+      let item = this.targetItems[index];
+      item.collapsed = !item.collapsed;
+    },
+    handleTargetToggleSubParentItem(parentIndex, subParentIndex) {
+      let item = this.targetItems[parentIndex].children[subParentIndex];
+      item.collapsed = !item.collapsed;
     },
     getImage(name) {
       return require('@/assets/' + name);
     },
-    handleFromSourceToTarget() {},
+    handleChangeSelectedSourceItems(items) {
+      this.selectedSourceItems = items;
+    },
+    handleChangeSelectedTargetItems(items) {
+      this.selectedTargetItems = items;
+    },
+    handleFromSourceToTarget() {
+      this.selectedSourceItems.forEach(
+        ({ grandParentItem, parentItem, childItem }) => {
+          if (grandParentItem && parentItem && childItem) {
+            let grandParentTarget = this.targetItems.find(
+              (item) => item.id == grandParentItem.id
+            );
+            let parentTarget = grandParentTarget.children.find(
+              (p) => p.id == parentItem.id
+            );
+            if (!parentTarget.children.find((p) => p.id == childItem.id)) {
+              parentTarget.children.push(
+                Object.assign({}, { ...childItem, checked: false })
+              );
+            }
+            let grandParentSource = this.sourceItems.find(
+              (item) => item.id == grandParentItem.id
+            );
+            let parentSource = grandParentSource.children.find(
+              (p) => p.id == parentItem.id
+            );
+            let sourceIndex = parentSource.children.findIndex(
+              (p) => p.id == childItem.id
+            );
+            if (sourceIndex > -1) {
+              parentSource.children.splice(sourceIndex, 1);
+            }
+          } else if (grandParentItem && parentItem) {
+            let grandParentTarget = this.targetItems.find(
+              (p) => p.id == grandParentItem.id
+            );
+
+            if (
+              !grandParentTarget.children.find((p) => p.id == parentItem.id)
+            ) {
+              grandParentTarget.children.push(
+                Object.assign({}, { ...parentItem, checked: false })
+              );
+            }
+            let grandParentSource = this.sourceItems.find(
+              (p) => p.id == grandParentItem.id
+            );
+            let sourceIndex = grandParentSource.children.findIndex(
+              (p) => p.id == parentItem.id
+            );
+            if (sourceIndex > -1) {
+              grandParentSource.children.splice(sourceIndex, 1);
+            }
+          }
+        }
+      );
+      this.selectedSourceItems = [];
+    },
+    handleFromTargetToSource() {
+      this.selectedTargetItems.forEach(
+        ({ grandParentItem, parentItem, childItem }) => {
+          if (grandParentItem && parentItem && childItem) {
+            let grandParentSource = this.sourceItems.find(
+              (item) => item.id == grandParentItem.id
+            );
+            let parentSource = grandParentSource.children.find(
+              (p) => p.id == parentItem.id
+            );
+            if (!parentSource.children.find((p) => p.id == childItem.id)) {
+              parentSource.children.push(
+                Object.assign({}, { ...childItem, checked: false })
+              );
+            }
+            let grandParentTarget = this.targetItems.find(
+              (item) => item.id == grandParentItem.id
+            );
+            let parentTarget = grandParentTarget.children.find(
+              (p) => p.id == parentItem.id
+            );
+            let targetIndex = parentTarget.children.findIndex(
+              (p) => p.id == childItem.id
+            );
+            if (targetIndex > -1) {
+              parentTarget.children.splice(targetIndex, 1);
+            }
+          } else if (grandParentItem && parentItem) {
+            let grandParentSource = this.sourceItems.find(
+              (p) => p.id == grandParentItem.id
+            );
+
+            if (
+              !grandParentSource.children.find((p) => p.id == parentItem.id)
+            ) {
+              grandParentSource.children.push(
+                Object.assign({}, { ...parentItem, checked: false })
+              );
+            }
+            let grandParentTarget = this.targetItems.find(
+              (p) => p.id == grandParentItem.id
+            );
+            let targetIndex = grandParentTarget.children.findIndex(
+              (p) => p.id == parentItem.id
+            );
+            if (targetIndex > -1) {
+              grandParentTarget.children.splice(targetIndex, 1);
+            }
+          }
+        }
+      );
+      this.selectedTargetItems = [];
+    },
+    handleFromAllSourceToTarget() {
+      this.selectedSourceItems = this.transferAllItems(this.sourceItems);
+      this.handleFromSourceToTarget();
+    },
+    handleFromAllTargetToSource() {
+      this.selectedTargetItems = this.transferAllItems(this.targetItems);
+      this.handleFromTargetToSource();
+    },
+    transferAllItems(items) {
+      let selectedItems = [];
+      items.forEach((grandParent) => {
+        grandParent.children.forEach((parent) => {
+          if (parent.children) {
+            parent.children.forEach((child) => {
+              selectedItems.push({
+                grandParentItem: grandParent,
+                parentItem: parent,
+                childItem: child,
+              });
+            });
+          } else {
+            selectedItems.push({
+              grandParentItem: grandParent,
+              parentItem: parent,
+            });
+          }
+        });
+      });
+      return selectedItems;
+    },
   },
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .custom-transfer {
   font-family: 'Roboto', sans-serif;
   display: flex;
@@ -251,81 +414,11 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-  .transfer-panel {
-    width: 210px;
-    border: 1px solid #b3c4d4;
-    &__header {
-      height: 30px;
-      box-sizing: border-box;
-      background: #e0e7ee;
-      color: #003a70;
-      padding: 7px 10px;
-      font-size: 12px;
-      border-top-left-radius: 2px;
-      border-top-right-radius: 2px;
+    background: #fff;
+    &:disabled {
+      opacity: 0.2;
+      cursor: not-allowed;
     }
-    &__body {
-      padding: 5px 0;
-      overflow: auto;
-      scrollbar-color: #b3c4d4 #b3c4d4;
-      scrollbar-width: thin;
-      text-align: left;
-
-      &::-webkit-scrollbar {
-        height: 100%;
-        width: 6px;
-      }
-      &::-webkit-scrollbar-track {
-        background: #e0e7ee;
-      }
-      &::-webkit-scrollbar-thumb {
-        background-color: #b3c4d4;
-        border-radius: 4px;
-        border: 1px solid #b3c4d4;
-      }
-      height: 450px;
-      .menu {
-        color: #003a70;
-        font-size: 12px;
-        .parent-menu {
-          box-sizing: border-box;
-          border-bottom: 1px solid #e0e7ee;
-          position: relative;
-          height: 28px;
-          display: flex;
-          align-items: center;
-          text-transform: uppercase;
-          width: 100%;
-          label {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            position: relative;
-            img {
-              margin-right: 5px;
-              margin-left: auto;
-            }
-          }
-          span {
-            font-weight: 700;
-          }
-        }
-        .child-menu {
-          box-sizing: border-box;
-          border-bottom: 1px solid #e0e7ee;
-          height: 28px;
-          display: flex;
-          align-items: center;
-          label {
-            display: flex;
-            align-items: center;
-          }
-        }
-      }
-    }
-  }
-  &__source {
   }
 }
 </style>
