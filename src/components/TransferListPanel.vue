@@ -59,6 +59,7 @@ export default {
   watch: {
     panelItems: {
       handler(val) {
+        debugger;
         let selectedItems = [];
         val.forEach((grandParent) => {
           if (grandParent.children) {
@@ -73,7 +74,7 @@ export default {
             selectedItems.push(grandParent);
           }
         });
-        this.listItems = selectedItems;
+        this.listItems = JSON.parse(JSON.stringify(selectedItems));
       },
       deep: true,
       immediate: true,
