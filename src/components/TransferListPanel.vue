@@ -59,7 +59,6 @@ export default {
   watch: {
     panelItems: {
       handler(val) {
-        debugger;
         let selectedItems = [];
         val.forEach((grandParent) => {
           if (grandParent.children) {
