@@ -135,7 +135,7 @@
 <script>
 import draggable from 'vuedraggable';
 export default {
-  name: 'TransferPanel',
+  name: 'TransferTreeviewPanel',
   components: { draggable },
   props: {
     panelName: { type: String },
@@ -315,7 +315,6 @@ export default {
       handler(newVal) {},
     },
   },
-  created() {},
 };
 </script>
 
