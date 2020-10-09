@@ -171,12 +171,12 @@ export default {
           item.children.some((p) => p.checked) &&
           !item.children.every((p) => p.checked)) ||
         (item.children &&
-          item.children.some(
-            (p) => p.children && p.children.some((p) => p.checked)
-          ) &&
-          !item.children.every(
-            (p) => p.children && p.children.every((p) => p.checked)
-          ))
+          item.children
+            .filter((p) => p.children && p.children.length > 0)
+            .some((p) => p.children && p.children.some((p) => p.checked)) &&
+          !item.children
+            .filter((p) => p.children && p.children.length > 0)
+            .every((p) => p.children && p.children.every((p) => p.checked)))
       );
     },
     showGrandParent(item) {
