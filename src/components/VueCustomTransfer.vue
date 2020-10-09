@@ -1,8 +1,14 @@
 <template>
-  <div>
+  <div class="custom-transfer_container">
+    <div>
+      <label>
+        <input type="checkbox" v-model="isGroup" />
+        <span> Group by resource type </span>
+      </label>
+    </div>
     <div class="custom-transfer">
       <div class="custom-transfer__source">
-        <TransferPanel
+        <TransferTreeviewPanel
           ref="sourcePanel"
           panelName="SOURCE PANEL"
           :panelItems="sourceItems"
@@ -60,26 +66,37 @@
         </button>
       </div>
       <div class="custom-transfer__target">
-        <TransferPanel
-          ref="targetPanel"
-          panelName="TARGET PANEL"
-          :panelItems="targetItems"
-          @hasAnySelectedItem="(val) => (hasAnySelectedTargetItem = val)"
-          @toggleParentItem="handleTargetToggleParentItem"
-          @toggleSubParentItem="handleTargetToggleSubParentItem"
-        />
+        <template v-if="isGroup">
+          <TransferTreeviewPanel
+            ref="targetPanel"
+            panelName="TARGET PANEL"
+            :panelItems="targetItems"
+            @hasAnySelectedItem="(val) => (hasAnySelectedTargetItem = val)"
+            @toggleParentItem="handleTargetToggleParentItem"
+            @toggleSubParentItem="handleTargetToggleSubParentItem"
+          />
+        </template>
+        <template v-else>
+          <TransferListPanel
+            ref="targetPanel"
+            panelName="TARGET PANEL"
+            :panelItems="targetItems"
+            @hasAnySelectedItem="(val) => (hasAnySelectedTargetItem = val)"
+          />
+        </template>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import TransferPanel from './TransferPanel';
+import TransferTreeviewPanel from './TransferTreeviewPanel';
+import TransferListPanel from './TransferListPanel';
 export default {
-  components: { TransferPanel },
+  components: { TransferTreeviewPanel, TransferListPanel },
   data() {
     return {
-      isGroup: false,
+      isGroup: true,
       config: {
         sourcePanelName: 'SOURCE PANEL',
         targetPanelName: 'TARGET PANEL',
@@ -224,6 +241,7 @@ export default {
           children: [],
         },
       ],
+      listTargetItems: [],
     };
   },
   methods: {
@@ -398,29 +416,34 @@ export default {
 </script>
 
 <style lang="scss">
-.custom-transfer {
-  font-family: 'Roboto', sans-serif;
+.custom-transfer_container {
   display: flex;
-  &__buttons {
+  flex-direction: column;
+  align-items: flex-start;
+  .custom-transfer {
+    font-family: 'Roboto', sans-serif;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    margin: 5px 10px;
-  }
-  &__button {
-    width: 30px;
-    height: 30px;
-    border: 1px solid #003a70;
-    border-radius: 6px;
-    margin: 5px 0;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-    &:disabled {
-      opacity: 0.2;
-      cursor: not-allowed;
+    &__buttons {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin: 5px 10px;
+    }
+    &__button {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #003a70;
+      border-radius: 6px;
+      margin: 5px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      &:disabled {
+        opacity: 0.2;
+        cursor: not-allowed;
+      }
     }
   }
 }
