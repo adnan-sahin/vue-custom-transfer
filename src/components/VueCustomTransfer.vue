@@ -108,88 +108,7 @@ export default {
       hasAnySelectedSourceItem: false,
       hasAnySelectedTargetItem: false,
       initialItems: [],
-      sourceItems: [
-        {
-          id: 1,
-          name: 'Grand Parent Menu 1',
-          checked: false,
-          collapsed: false,
-          children: [
-            {
-              id: 1,
-              name: 'Parent Menu 1',
-              checked: false,
-              collapsed: false,
-              children: [
-                { id: 1, name: 'Child Menu', checked: false },
-                { id: 2, name: 'Child Menu', checked: false },
-                { id: 3, name: 'Child Menu', checked: false },
-                { id: 4, name: 'Child Menu', checked: false },
-              ],
-            },
-            {
-              id: 2,
-              name: 'Parent Menu 2',
-              checked: false,
-              collapsed: false,
-              children: [
-                { id: 5, name: 'Child Menu', checked: false },
-                { id: 6, name: 'Child Menu', checked: false },
-                { id: 7, name: 'Child Menu', checked: false },
-                { id: 8, name: 'Child Menu', checked: false },
-              ],
-            },
-          ],
-        },
-        {
-          id: 2,
-          name: 'Grand Parent Menu 2',
-          checked: false,
-          collapsed: false,
-          children: [
-            {
-              id: 1,
-              name: 'Parent Menu 3',
-              checked: false,
-              collapsed: false,
-              children: [
-                { id: 9, name: 'Child Menu', checked: false },
-                { id: 10, name: 'Child Menu', checked: false },
-                { id: 11, name: 'Child Menu', checked: false },
-                { id: 12, name: 'Child Menu', checked: false },
-                { id: 13, name: 'Child Menu', checked: false },
-              ],
-            },
-            {
-              id: 2,
-              name: 'Parent Menu 4',
-              checked: false,
-              collapsed: false,
-              children: [
-                { id: 14, name: 'Child Menu', checked: false },
-                { id: 15, name: 'Child Menu', checked: false },
-                { id: 16, name: 'Child Menu', checked: false },
-                { id: 17, name: 'Child Menu', checked: false },
-                { id: 18, name: 'Child Menu', checked: false },
-                { id: 19, name: 'Child Menu', checked: false },
-                { id: 20, name: 'Child Menu', checked: false },
-              ],
-            },
-          ],
-        },
-        {
-          id: 4,
-          name: 'Parent Menu 5',
-          checked: false,
-          collapsed: false,
-          children: [
-            { id: 21, name: 'Child Menu', checked: false },
-            { id: 22, name: 'Child Menu', checked: false },
-            { id: 23, name: 'Child Menu', checked: false },
-            { id: 24, name: 'Child Menu', checked: false },
-          ],
-        },
-      ],
+      sourceItems: [],
       targetItems: [],
       listTargetItems: [],
     };
@@ -359,6 +278,100 @@ export default {
       });
       return selectedItems;
     },
+  },
+  created() {
+    const mockData = [
+      {
+        id: 1,
+        name: 'Grand Parent Menu 1',
+        children: [
+          {
+            id: 1,
+            name: 'Bridge Stand',
+            children: [
+              { id: 1, name: 'Child Menu', type: 'resource' },
+              { id: 2, name: 'Child Menu' },
+              { id: 3, name: 'Child Menu' },
+              { id: 4, name: 'Child Menu' },
+            ],
+          },
+          {
+            id: 2,
+            name: 'Parent Menu 2',
+            children: [
+              { id: 5, name: 'Child Menu' },
+              { id: 6, name: 'Child Menu' },
+              { id: 7, name: 'Child Menu' },
+              { id: 8, name: 'Child Menu' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 2,
+        name: 'Grand Parent Menu 2',
+
+        children: [
+          {
+            id: 1,
+            name: 'Parent Menu 3',
+            children: [
+              { id: 9, name: 'Child Menu', type: 'resource' },
+              { id: 10, name: 'Child Menu' },
+              { id: 11, name: 'Child Menu' },
+              { id: 12, name: 'Child Menu' },
+              { id: 13, name: 'Child Menu' },
+            ],
+          },
+          {
+            id: 2,
+            name: 'Parent Menu 4',
+            children: [
+              { id: 14, name: 'Child Menu', children: [] },
+              { id: 15, name: 'Child Menu', children: [] },
+              { id: 16, name: 'Child Menu', children: [] },
+              { id: 17, name: 'Child Menu', children: [] },
+              { id: 18, name: 'Child Menu', children: [] },
+              { id: 19, name: 'Child Menu', children: [] },
+              { id: 20, name: 'Child Menu', children: [] },
+            ],
+          },
+        ],
+      },
+      {
+        id: 0,
+        name: 'Unplanned',
+        children: [
+          { id: 21, name: 'Stand', type: 'unit', children: [] },
+          { id: 22, name: 'Gate', type: 'unit', children: [] },
+          { id: 23, name: 'Counter', children: [] },
+          { id: 24, name: 'Chute', children: [] },
+        ],
+      },
+    ];
+    this.sourceItems = mockData.map((grandParent) => {
+      grandParent.checked = false;
+      grandParent.collapsed = false;
+      if (grandParent.children && grandParent.children.length > 0) {
+        grandParent.children.map((parent) => {
+          parent.checked = false;
+          parent.collapsed = false;
+          if (parent.children && parent.children.length > 0) {
+            parent.children.map((child) => {
+              child.checked = false;
+              if (child.children && child.children.length == 0) {
+                delete child.children;
+              }
+              return child;
+            });
+          } else if (parent.children && parent.children.length == 0) {
+            delete parent.children;
+          }
+          return parent;
+        });
+      }
+      return grandParent;
+    });
   },
 };
 </script>
